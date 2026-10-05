@@ -1,39 +1,15 @@
-# fabric-zone-domain
+# service-zone
 
-One zone, as one deployable thing. A **domain** is a packing of planes and transport layers,
-and a ring forces co-location, so this is the packing that shares a ring.
+One zone as one deployable domain: the planes and transport layers that share a shared-memory ring, packed together.
 
-## What is in it, and why these
+## What it is for
 
-The membership is derived rather than chosen. iceoryx2 is shared memory, so anything that
-exchanges per-tick data is on one machine. Follow that and the list falls out.
+A domain is a packing of planes and transport layers. Members that exchange per-tick data over iceoryx2 shared memory must sit on one machine, so the ring decides the membership rather than a choice. Each member stays its own repository and image, and this repository holds the packing that runs them together. Members reach each other through shared memory, so only the transport layers listen on a socket.
 
-| member | why it is here |
-| --- | --- |
-| `fabric-weft-plane` | the BEAM reaches the data plane **through a NIF**, which is in process, so it is here by necessity |
-| the data plane | the ring itself, a seqlock ring in `native/dataplane` |
-| `fabric-crowd-plane` | reads and writes entity state per tick, over iceoryx2 |
-| `fabric-ingest-edge` | decodes player input datagrams and gives them to the data plane over iceoryx2 |
-| `fabric-gateway-edge` | decodes control streams and gives them to the control plane over iceoryx2 |
-| `fabric-tool-plane` | called from the ring, and a tool call carries a mesh or a stage worth not copying |
-| `fabric-janet-plane` | samples the ring at its own rate, and never sits in the per-packet path |
+## Build
 
-**Nothing here is a copy.** Each member is its own repository and its own image. This
-repository holds the manifest that runs them together, which is what a domain is.
+There is nothing to build yet: the repository holds the packing, and no unit or machine definitions.
 
-## What is not in it
+## Licence
 
-`fabric-store-domain`, because the store tolerates one FoundationDB round trip, about 1 ms,
-and therefore needs no ring. `fabric-behaviour-domain`, because a plan changes in seconds and
-ARDY wants a GPU, and neither is a reason to make every zone cost one.
-
-## Ports
-
-None between members. They reach each other over iceoryx2, which is shared memory and has no
-port. The only listening sockets belong to the two transport layers, because a transport layer
-is a plane with networking.
-
-## State
-
-**Not built.** This holds the packing. The quadlet units and the Fly machine definition come
-next.
+MIT; see `LICENSE`.
